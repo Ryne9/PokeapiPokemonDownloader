@@ -1,8 +1,3 @@
-let pokemon = [];
-let finalPokemon = [];
-let url = "https://pokeapi.co/api/v2/pokemon/";
-let pokemonId = 1;
-
 function createCORSRequest(method, url) {
     let xhr = new XMLHttpRequest();
     if ("withCredentials" in xhr) {
@@ -163,5 +158,66 @@ let saveData = (function () {
     };
 }());
 
-//Init..
-getPokemon(pokemonId);
+let callMove = (moveId) => {
+    if (moves[moveId] != undefined) {
+        let url = "https://pokeapi.co/api/v2/move/";
+        get(url + moveId + "/").then((response) => {
+            console.log(response);
+            console.log(moveId);
+            let obj = JSON.parse(response);
+            moves[moveId].accuracy = obj.accuracy;
+            moves[moveId].power = obj.power;
+            moves[moveId].damageClass = obj.damage_class.name;
+            moves[moveId].meta = obj.meta;
+            moves[moveId].type = {
+                id: getIdFromUrl(obj.type.url),
+                name: obj.type.name
+            };
+            moves[moveId].target = {
+                id: getIdFromUrl(obj.target.url),
+                name: obj.target.name
+            };
+            moves[moveId].priority = obj.priority;
+            moves[moveId].pp = obj.pp;
+            moves[moveId].effectChance = obj.effect_chance;
+            moves[moveId].statChanges = obj.stat_changes;
+            moves[moveId].effectChanges = obj.effect_changes;
+
+            moveId++;
+            callMove(moveId);
+        }, (error) => {
+            console.error("Something went wrong" + error);
+        });
+    } else {
+        moveId++;
+        callMove(moveId);
+    }
+
+    if (moveId > 707) {
+        console.log("Finished no problems");
+        return;
+    }
+};
+
+//Init pokemon generation (Uncomment to use)
+// let pokemon = [];
+// let finalPokemon = [];
+// let url = "https://pokeapi.co/api/v2/pokemon/";
+// let pokemonId = 1;
+//
+// getPokemon(pokemonId);
+
+
+//Init move calculation
+let moveId = 0;
+moves = {};
+pokemon.forEach((pokemon) => {
+   pokemon.moves.forEach((move) => {
+       console.log(move.id);
+      moves[`${move.id}`] =  {
+          name: move.name,
+          id: move.id
+      }
+   });
+});
+callMove(moveId);
